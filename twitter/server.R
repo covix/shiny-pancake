@@ -40,6 +40,18 @@ shinyServer(function(input, output) {
   
   
   # Map
+  output$sourceBarPlot <- renderChart2({
+    # barplot(
+    #   sourcesV[c(1:10)],
+    #   main = 'Application of all tweets',
+    #   # ylab = "Number of tweets",
+    #   ylab = "Number of tweets",
+    #   las = 2
+    # )
+    return(rPlot(x = "source", y = "count", data = sources, type = 'bar'))
+  })
+  
+  
   output$map <- renderLeaflet({
     pal <- colorFactor("Spectral", map$sourceL)
     
@@ -83,7 +95,7 @@ shinyServer(function(input, output) {
   
   # Show a popup at the given location
   showTweetPopup <- function(layerId, lat, lng) {
-    tweet <- map[map$layerId == layerId, ]
+    tweet <- map[map$layerId == layerId,]
     content <-
       as.character(tagList(
         HTML(tweet$text),
@@ -126,8 +138,10 @@ shinyServer(function(input, output) {
       Value = "value",
       NodeID = "name",
       Group = "group",
+      Nodesize = "size",
       opacity = .8,
-      fontSize = 15
+      fontSize = 15,
+      zoom = TRUE
     )
   })
   

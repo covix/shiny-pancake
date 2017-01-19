@@ -45,6 +45,7 @@ shinyUI(tagList(
     tabPanel("Map",
              div(
                class = "outer",
+               
                leafletOutput("map", width = "100%", height = "100%"),
                
                # Shiny versions prior to 0.11 should use class="modal" instead.
@@ -68,8 +69,10 @@ shinyUI(tagList(
     
     
     tabPanel("Network",
-             div(class = "outer",
-                 forceNetworkOutput("force",  width = "100%", height = "100%"))),
+             div(
+               class = "outer",
+               forceNetworkOutput("force",  width = "100%", height = "100%")
+             )),
     
     
     theme = shinytheme("united")

@@ -53,26 +53,99 @@ def create_hs_ds(tweets):
     return new
 
 
-def main():
-    # ds = '../data/tweets_macbook_sample.txt'
-    ds = sys.argv[1]
-    cmd = sys.argv[2]
-    fname, ext = os.path.splitext(ds)
+def create_nodes_ds(tweets):
+    new = {}
+    # usr = {}
+    # for tweet in tweets:
+    #     n = tweet['user']['name']
+    #     if n not in usr:
+    #         usr[n] = [tweet['user']['screen_name']]
+    #     else:
+    #         if tweet['user']['screen_name'] not in usr[n]:
+    #             usr[n].append(tweet['user']['screen_name'])
 
+    # usrc = {k: len(v) for k,v in usr.iteritems()}
+    # for k,v in usrc.iteritems():
+    #     if v > 1:
+    #         print k, v, usr[k]
+
+    for tweet in tweets:
+        sc = tweet['user']['screen_name']
+        if sc not in new:
+            new[sc] = {
+                'idx': len(new),
+                'name': tweet['user']['screen_name'],
+                'size': 1
+            }
+        else:
+            new[sc]['size'] = new[sc]['size'] + 1
+
+    new = pd.DataFrame(new.values())
+
+    new = new[new['size'] > 0]
+
+    return new
+
+
+def create_links_ds(tweets):
+    nodes = create_nodes_ds(tweets)
+    nodes.to_csv("{0}_{1}{2}".format(fname, 'nodes', ext),
+                 index=False, encoding='utf-8')
+    new = {}
+    names = dict(nodes[['name', 'idx']].values)
+
+    for tweet in tweets:
+        if 'retweeted_status' in tweet:
+            if tweet['user']['screen_name'] in names and tweet['retweeted_status']['user']['screen_name'] in names:
+                k = (
+                    names[tweet['user']['screen_name']],
+                    names[tweet['retweeted_status']['user']['screen_name']]
+                )
+
+                if k not in new:
+                    new[k] = {
+                        'source': names[tweet['user']['screen_name']],
+                        'target': names[tweet['retweeted_status']['user']['screen_name']],
+                        'size': 1
+                    }
+                else:
+                    new[k]['size'] = new[k]['size'] + 1
+
+    new = pd.DataFrame(new.values())
+
+    return new
+
+
+def create_sources_ds(tweets):
+    new = {}
+    for tweet in tweets:
+        source = BeautifulSoup(tweet['source'], "lxml").text
+        new[source] = new.get(source, 0) + 1
+
+    new = pd.DataFrame(new.items(), columns=['source', 'count'])
+
+    return new
+
+
+def main():
     with open(ds) as f:
         tweets = [json.loads(i) for i in f]
 
-    functions = {
-        'hs': create_hs_ds,
-        'map': create_map_ds
-    }
+    # functions = {
+    #     'hs': create_hs_ds,
+    #     'map': create_map_ds,
+    #     'node': create_node_ds,
+    # }
 
-    df = functions[cmd](tweets)
-    df.to_csv("{0}_{1}{2}".format(fname, cmd, ext), index=False, encoding='utf-8')
-
-    # df_hs = create_hs_ds(tweets)
-    # df_hs.to_csv("{0}_hs{1}".format(fname, ext), index=False)
-
+    for cmd in cmds:
+        df = sys.modules[__name__].__dict__['create_{}_ds'.format(cmd)](tweets)
+        df.to_csv("{0}_{1}{2}".format(fname, cmd, ext),
+                  index=False, encoding='utf-8')
 
 if __name__ == '__main__':
+    # ds = '../data/tweets_macbook_sample.txt'
+    ds = sys.argv[1]
+    cmds = sys.argv[2:]
+    fname, ext = os.path.splitext(ds)
+
     main()
