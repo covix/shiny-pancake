@@ -20,6 +20,7 @@ data(MisNodes)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
+  # StreaGraph
   output$hsStreamGraphPlot <- renderStreamgraph({
     toplist <- hs %>%
       count(text) %>%
@@ -38,19 +39,20 @@ shinyServer(function(input, output) {
   })
   
   
+  # Map
   output$map <- renderLeaflet({
     pal <- colorFactor("Spectral", map$sourceL)
     
-    if (input$source == "All") {
-      data <- map
-    } else {
-      data <- map %>% filter(sourceL == input$source)
-    }
+    data <- map
     
     leaflet() %>%
       addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
                attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>') %>%
-      addCircleMarkers(data = data[c("long", "lat")], color = pal(data$sourceL)) %>%
+      addCircleMarkers(
+        data = data[c("long", "lat")],
+        color = pal(data$sourceL),
+        layerId = data$layerId
+      ) %>%
       addLegend(
         "bottomleft",
         pal = pal,
@@ -60,7 +62,61 @@ shinyServer(function(input, output) {
       )
   })
   
+  observe ({
+    colorSource <- input$source
+    
+    pal <- colorFactor("Spectral", map$sourceL)
+    if (colorSource == "All") {
+      data <- map
+    } else {
+      data <- map %>% filter(sourceL == colorSource)
+    }
+    
+    leafletProxy("map", data = data) %>%
+      clearMarkers() %>%
+      addCircleMarkers(
+        data = data[c("long", "lat")],
+        color = pal(data$sourceL),
+        layerId = data$layerId
+      )
+  })
   
+  # Show a popup at the given location
+  showTweetPopup <- function(layerId, lat, lng) {
+    tweet <- map[map$layerId == layerId, ]
+    content <-
+      as.character(tagList(
+        HTML(tweet$text),
+        "-",
+        tags$a(
+          href = sprintf("https://twitter.com/%s", tweet$user),
+          sprintf("@%s", tweet$user),
+          target = "_blank"
+        ),
+        tags$a(
+          href = sprintf("https://twitter.com/%s/status/%s", tweet$user, tweet$id),
+          icon("new-window", lib = "glyphicon"),
+          target = "_blank"
+        )
+      ))
+    leafletProxy("map") %>% addPopups(lng, lat, content, layerId = layerId)
+  }
+  
+  # When map is clicked, show a popup with city info
+  observe({
+    leafletProxy("map") %>% clearPopups()
+    event <- input$map_marker_click
+    
+    if (is.null(event))
+      return()
+    
+    isolate({
+      showTweetPopup(event$id, event$lat, event$lng)
+    })
+  })
+  
+  
+  # Network
   output$force <- renderForceNetwork({
     forceNetwork(
       Links = MisLinks,

@@ -20,11 +20,14 @@ def create_map_ds(tweets):
                 'long': long_,
                 'lat': lat,
                 'source': source,
-                'created_at': tweet['created_at']
+                'created_at': tweet['created_at'],
+                'text': ' '.join(tweet['text'].split()),
+                'user': tweet['user']['screen_name'],
             }
             new.append(tw)
 
     new = pd.DataFrame(new)
+    new['id'] = new['id'].astype(str)
 
     return new
 
@@ -65,7 +68,7 @@ def main():
     }
 
     df = functions[cmd](tweets)
-    df.to_csv("{0}_{1}{2}".format(fname, cmd, ext), index=False)
+    df.to_csv("{0}_{1}{2}".format(fname, cmd, ext), index=False, encoding='utf-8')
 
     # df_hs = create_hs_ds(tweets)
     # df_hs.to_csv("{0}_hs{1}".format(fname, ext), index=False)

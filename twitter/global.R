@@ -24,7 +24,10 @@ hs$text <- tolower(hs$text)
 
 # map <- "../data/tweets_macbook_sample_map.txt"
 map <- "../data/tweets_macbook_2016-11-03-15-10-46_map.txt"
-map <- read.csv(map)
+map <-
+  read.csv(map,
+           colClasses = c('factor', 'character', 'double', 'double', 'factor', rep('character', 2)))
+map$layerId <- c(1:nrow(map))
 
 keep_sources <-
   map %>% count(source) %>% arrange(desc(n)) %>% filter(row_number() <= 10) %>% .$source
@@ -34,3 +37,4 @@ map <- within(map,
                 ifelse(map$source %in% keep_sources, levels(map$source)[map$source], "Other"))
 sl <- unique(map$sourceL)
 sources <- as.factor(c("All", sl[sl != 'Other'], "Other"))
+
