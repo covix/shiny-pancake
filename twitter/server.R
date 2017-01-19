@@ -12,6 +12,10 @@ library(dplyr)
 library(streamgraph)
 library(lazyeval)
 library(leaflet)
+library(networkD3)
+
+data(MisLinks)
+data(MisNodes)
 
 
 # Define server logic required to draw a histogram
@@ -54,6 +58,21 @@ shinyServer(function(input, output) {
         title = 'Source',
         layerId = "colorLegend"
       )
+  })
+  
+  
+  output$force <- renderForceNetwork({
+    forceNetwork(
+      Links = MisLinks,
+      Nodes = MisNodes,
+      Source = "source",
+      Target = "target",
+      Value = "value",
+      NodeID = "name",
+      Group = "group",
+      opacity = .8,
+      fontSize = 15
+    )
   })
   
 })

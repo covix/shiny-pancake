@@ -26,7 +26,6 @@ hs$text <- tolower(hs$text)
 map <- "../data/tweets_macbook_2016-11-03-15-10-46_map.txt"
 map <- read.csv(map)
 
-
 keep_sources <-
   map %>% count(source) %>% arrange(desc(n)) %>% filter(row_number() <= 10) %>% .$source
 

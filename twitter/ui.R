@@ -10,6 +10,8 @@
 library(shiny)
 library(leaflet)
 library(shinythemes)
+library(networkD3)
+
 
 shinyUI(tagList(
   tags$head(tags$style(HTML(
@@ -22,6 +24,8 @@ shinyUI(tagList(
   
   navbarPage(
     "Shiny Tweets",
+    
+    
     tabPanel("HashtagsFlow",
              div(
                sidebarLayout(sidebarPanel(
@@ -36,6 +40,7 @@ shinyUI(tagList(
                  "hsStreamGraphPlot"
                )))
              )),
+    
     
     tabPanel("Map",
              div(
@@ -60,6 +65,11 @@ shinyUI(tagList(
                  selectInput("source", "Source", sources)
                )
              )),
+    
+    
+    tabPanel("Network",
+             div(class = "outer",
+                 forceNetworkOutput("force",  width = "100%", height = "100%"))),
     
     
     theme = shinytheme("united")
