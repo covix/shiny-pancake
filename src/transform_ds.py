@@ -53,16 +53,22 @@ def create_hs_ds(tweets):
 def main():
     # ds = '../data/tweets_macbook_sample.txt'
     ds = sys.argv[1]
+    cmd = sys.argv[2]
     fname, ext = os.path.splitext(ds)
 
     with open(ds) as f:
         tweets = [json.loads(i) for i in f]
 
-    df_map = create_map_ds(tweets)
-    df_map.to_csv("{0}_map{1}".format(fname, ext), index=False)
+    functions = {
+        'hs': create_hs_ds,
+        'map': create_map_ds
+    }
 
-    df_hs = create_hs_ds(tweets)
-    df_hs.to_csv("{0}_hs{1}".format(fname, ext), index=False)
+    df = functions[cmd](tweets)
+    df.to_csv("{0}_{1}{2}".format(fname, cmd, ext), index=False)
+
+    # df_hs = create_hs_ds(tweets)
+    # df_hs.to_csv("{0}_hs{1}".format(fname, ext), index=False)
 
 
 if __name__ == '__main__':

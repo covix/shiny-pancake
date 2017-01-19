@@ -11,44 +11,16 @@ library(shiny)
 library(dplyr)
 library(streamgraph)
 library(lazyeval)
+library(leaflet)
 
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
-  hs <- "../data/tweets_macbook_sample_hs.txt"
-  # hs <- "../data/tweets_macbook_2016-11-03-15-10-46_hs.txt"
-  
-  hs <- read.csv(hs)
-  # hs <-
-  #   within(hs,
-  #          date_time <-
-  #            cut(as.POSIXlt(created_at, format = "%Y-%m-%d %H:%M:%S"), breaks = "hour"))
-  # hs <-
-  #   within(hs,
-  #          date_time <-
-  #           cut(as.POSIXct(as.POSIXlt(created_at, origin="2016-10-27")), breaks = "hour"))
-  # hs <- within(hs, date_time <- created_at)
-  
-  hs <- within(hs, date_time <- (created_at - as.numeric(as.POSIXct("2016-10-27"))) / 3600)
-  hs$text <- tolower(hs$text)
-
-  output$distPlot <- renderPlot({
-    # generate bins based on input$bins from ui.R
-    x    <- faithful[, 2]
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    
-    # draw the histogram with the specified number of bins
-    hist(x,
-         breaks = bins,
-         col = 'darkgray',
-         border = 'white')
-  })
-  
   output$hsStreamGraphPlot <- renderStreamgraph({
-    toplist <- hs %>% 
-      count(text) %>% 
-      arrange(n) %>% 
-      filter(row_number() > n() - input$hashtags)
+    toplist <- hs %>%
+      count(text) %>%
+      arrange(desc(n)) %>%
+      filter(row_number() <= input$hashtags)
     
     toplist <- toplist$text
     
@@ -57,9 +29,31 @@ shinyServer(function(input, output) {
       count() %>%
       arrange(n) %>%
       filter(text %in% toplist)
-
     
     eval(call_new(streamgraph, data, "text", "n", "date_time", scale = "continuous"))
+  })
+  
+  
+  output$map <- renderLeaflet({
+    pal <- colorFactor("Spectral", map$sourceL)
+    
+    if (input$source == "All") {
+      data <- map
+    } else {
+      data <- map %>% filter(sourceL == input$source)
+    }
+    
+    leaflet() %>%
+      addTiles(urlTemplate = "//{s}.tiles.mapbox.com/v3/jcheng.map-5ebohr46/{z}/{x}/{y}.png",
+               attribution = 'Maps by <a href="http://www.mapbox.com/">Mapbox</a>') %>%
+      addCircleMarkers(data = data[c("long", "lat")], color = pal(data$sourceL)) %>%
+      addLegend(
+        "bottomleft",
+        pal = pal,
+        values = data$sourceL,
+        title = 'Source',
+        layerId = "colorLegend"
+      )
   })
   
 })
