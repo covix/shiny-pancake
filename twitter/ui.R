@@ -24,15 +24,17 @@ clusterAlg <- c('No cluster' = 'default',
 weightAlg <- c('Number of tweets' = 'default',
                'PageRank' = 'page_rank')
 
-hsChoices <- c('', sort(unique(
-  hs %>% 
-    group_by(text) %>%
-    count() %>% 
-    arrange(desc(n)) %>%
-    filter(row_number() <= 25) %>%
-    arrange(text) %>%
-    .$text
-)))
+hsChoices <- c('', sort(
+  unique(
+    hs %>%
+      group_by(text) %>%
+      count() %>%
+      arrange(desc(n)) %>%
+      filter(row_number() <= 20) %>%
+      arrange(text) %>%
+      .$text
+  )
+))
 
 
 shinyUI(tagList(
@@ -50,21 +52,57 @@ shinyUI(tagList(
     "Shiny Tweets",
     
     
-    tabPanel("HashtagsFlow",
-             div(
-               sidebarLayout(sidebarPanel(
-                 sliderInput(
-                   inputId = "hashtags",
-                   label = "Number of hashtags:",
-                   min = 1,
-                   max = 50,
-                   value = 20
-                 )
-               ),
-               mainPanel(streamgraphOutput(
-                 "hsStreamGraphPlot"
-               )))
-             )),
+    tabPanel(
+      "HashtagsFlow",
+      
+      streamgraphOutput("hsStreamGraphPlot"),
+      
+      fluidRow(
+        column(
+          width = 3,
+          offset = 3,
+          class="col-md-push-0",
+        
+          sliderInput(
+            inputId = "hashtags",
+            label = h3("Min hashtag count / hour"),
+            min = 1,
+            max = 50,
+            value = 20
+          ),
+          
+          helpText(
+            "If set to ",
+            em("x"),
+            ", hashtags that were not",
+            "retweetd at least ",
+            em("x"),
+            " times in all the considered hour,", 
+            "will be filtered out",
+            "in the selected time interval"
+          )
+          
+        ),
+        
+        column(
+          width = 3,
+          offset = 0,
+          
+          sliderInput(
+            inputId = "hsTime",
+            label = h3("Time Interval"),
+            min = 0,
+            max = 200,
+            value = c(0, 50)
+          ),
+          
+          helpText(
+            "Time is expressend in hours spent from the first tweet collected."
+          )
+          
+        )
+      )
+    ),
     
     
     tabPanel("Map",

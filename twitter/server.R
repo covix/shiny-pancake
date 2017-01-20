@@ -20,14 +20,32 @@ library(networkD3)
 shinyServer(function(input, output, session) {
   # StreaGraph
   output$hsStreamGraphPlot <- renderStreamgraph({
-    toplist <- hs %>%
-      count(text) %>%
-      arrange(desc(n)) %>%
-      filter(row_number() <= input$hashtags)
+    nHs <- input$hashtags
+    nHours <- min(hs$created_at) + input$hsTime * 3600
     
-    toplist <- toplist$text
+    toplistc <- hs %>%
+      filter(created_at >= nHours[[1]] & created_at <= nHours[[2]]) %>%
+      group_by(created_at, text) %>%
+      summarise(n = n())
+    
+    toplist <- c()
+    for (h in unique(toplistc$created_at)) {
+      tmp <- toplistc %>%
+        filter(created_at == h & n > nHs) %>%
+        arrange(desc(n)) %>%
+        filter(row_number() < 15) %>%
+        .$text
+
+      toplist <- c(
+        toplist,
+        tmp
+      )
+    }
+    
+    toplist <- unique(toplist)
     
     data <- hs %>%
+      filter(created_at >= nHours[[1]] & created_at <= nHours[[2]]) %>%
       group_by(date_time, text) %>%
       count() %>%
       arrange(n) %>%
@@ -92,7 +110,7 @@ shinyServer(function(input, output, session) {
   
   # Show a popup at the given location
   showTweetPopup <- function(layerId, lat, lng) {
-    tweet <- map[map$layerId == layerId, ]
+    tweet <- map[map$layerId == layerId,]
     content <-
       as.character(tagList(
         HTML(tweet$text),
@@ -158,7 +176,10 @@ shinyServer(function(input, output, session) {
     nodes <- nodes_or %>% filter(idx %in% users)
     
     if (nrow(nodes) == 0 | nrow(links) == 0) {
-      validate(need(input$min_degree > 1, tags$h1("The real error is: degree to high")))
+      validate(need(
+        input$min_degree > 1,
+        tags$h1("The real error is: degree to high")
+      ))
       return()
     }
     
@@ -191,9 +212,9 @@ shinyServer(function(input, output, session) {
     wgs <- c()
     if (weigthAlg == 'page_rank') {
       pr <- page_rank(g)
-      wgs <- 10 * (pr$vector / min(pr$vector))
+      wgs <- (10 * (pr$vector / min(pr$vector))) ^ (3/2)
     } else if (weigthAlg == 'default') {
-      wgs <- nodes$size
+      wgs <- 10 * nodes$size
     }
     
     net$nodes$size <- wgs

@@ -1,0 +1,7 @@
+created_at,id,lat,long,source,text,user
+Mon Oct 31 13:19:09 +0000 2016,793079866774032384,30.26304213,-97.73984771,dlvr.it,Apple drops iconic Mac startup sound from new MacBook Pro https://t.co/dmAsLuHlib https://t.co/uAVJ7yCz5w,MorterJon
+Mon Oct 31 06:14:06 +0000 2016,792972900781297665,-7.27673971,112.80585766,Instagram,"Remax USB Type-C for New MacBook 12"" Price : 35k Grab it fast , limited stock For more info… https://t.co/jGQvH3xfsB",iCareAppleS
+Sat Oct 29 20:21:17 +0000 2016,792461325825822720,37.48534955,-122.18947303,Tweetbot for iΟS,@marcoarment Ironically the TouchBar MacBook Pro is the no-brainer perfect upgrade I've been waiting for. Hit everything I wanted/desired.,ghshephard
+Fri Oct 28 19:15:16 +0000 2016,792082323940466689,38.9394,-77.0256,Hootsuite,WTF Is Apple Thinking With the New MacBook Pro and Touch Bar? HP did that a decade a go &amp; it was a disaster! https://t.co/u2tqMCBiWv #ux #ui,Joseph_Santoro
+Thu Oct 27 17:51:41 +0000 2016,791698900126142465,51.51444409,-0.07576811,Tweetbot for iΟS,@nathansnelgrove I think it’s the first decent improvement to the MacBook Pro for a long time. Something other than faster processors.,jracull
+Thu Oct 27 11:13:40 +0000 2016,791598734937292801,44.7846849,-73.0206181,Plume for Android,ORLY?? Microsoft will pay you $650 to ditch your MacBook for a Surface https://t.co/QBSag4TxzS /c @criacow,technicalmoses
