@@ -12,14 +12,12 @@ library(dplyr)
 library(streamgraph)
 library(lazyeval)
 library(leaflet)
+library(igraph)
+# library(visNetwork)
 library(networkD3)
 
-data(MisLinks)
-data(MisNodes)
-
-
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
   # StreaGraph
   output$hsStreamGraphPlot <- renderStreamgraph({
     toplist <- hs %>%
@@ -40,16 +38,15 @@ shinyServer(function(input, output) {
   
   
   # Map
-  output$sourceBarPlot <- renderChart2({
-    # barplot(
-    #   sourcesV[c(1:10)],
-    #   main = 'Application of all tweets',
-    #   # ylab = "Number of tweets",
-    #   ylab = "Number of tweets",
-    #   las = 2
-    # )
-    return(rPlot(x = "source", y = "count", data = sources, type = 'bar'))
-  })
+  # output$sourceBarPlot <- renderChart({
+  # barplot(
+  #   sourcesV[c(1:10)],
+  #   main = 'Application of all tweets',
+  #   # ylab = "Number of tweets",
+  #   ylab = "Number of tweets",
+  #   las = 2
+  # )
+  # })
   
   
   output$map <- renderLeaflet({
@@ -95,7 +92,7 @@ shinyServer(function(input, output) {
   
   # Show a popup at the given location
   showTweetPopup <- function(layerId, lat, lng) {
-    tweet <- map[map$layerId == layerId,]
+    tweet <- map[map$layerId == layerId, ]
     content <-
       as.character(tagList(
         HTML(tweet$text),
@@ -130,9 +127,80 @@ shinyServer(function(input, output) {
   
   # Network
   output$force <- renderForceNetwork({
+    # output$force <- renderVisNetwork({
+    min_degree <- input$degreeInput
+    weigthAlg <- input$weightAlg
+    clusterAlg <- input$clusterAlg
+    hashtag <- tolower(input$netHashtag)
+    
+    users <- links_or
+    
+    if (hashtag != '') {
+      ht_users <-
+        as.character(hs %>% filter(text == hashtag) %>% .$screen_name)
+      nodes <- nodes_or %>%
+        filter(name %in% ht_users)
+      
+      users <- users %>%
+        filter(source %in% nodes$idx & target %in% nodes$idx)
+    }
+    
+    users <- users %>%
+      group_by(target) %>%
+      summarise(rt = sum(value)) %>%
+      filter(rt > min_degree) %>%
+      .$target
+    
+    links <-
+      links_or %>%
+      filter(source %in% users & target %in% users)
+    
+    nodes <- nodes_or %>% filter(idx %in% users)
+    
+    if (nrow(nodes) == 0 | nrow(links) == 0) {
+      validate(need(input$min_degree > 1, tags$h1("The real error is: degree to high")))
+      return()
+    }
+    
+    #with igraph
+    dict <- as.vector(as.character(nodes$name), mode = "list")
+    
+    
+    names(dict) <- as.character(nodes$idx)
+    
+    # with igraph
+    links$source <-
+      unlist(dict[as.character(links$source)])
+    links$target <-
+      unlist(dict[as.character(links$target)])
+    
+    links <- links[c('source', 'target', 'value')]
+    
+    g <-
+      graph_from_data_frame(links, directed = TRUE, vertices = nodes[, c(2:4)])
+    
+    if (clusterAlg != 'default') {
+      wc <- get(paste('cluster', clusterAlg, sep = '_'))(g)
+      members <- membership(wc)
+    } else {
+      members <- rep(1, nrow(nodes))
+    }
+    
+    net <- networkD3::igraph_to_networkD3(g, members)
+    
+    wgs <- c()
+    if (weigthAlg == 'page_rank') {
+      pr <- page_rank(g)
+      wgs <- 10 * (pr$vector / min(pr$vector))
+    } else if (weigthAlg == 'default') {
+      wgs <- nodes$size
+    }
+    
+    net$nodes$size <- wgs
+    
     forceNetwork(
-      Links = MisLinks,
-      Nodes = MisNodes,
+      Links = net$links,
+      Nodes = net$nodes,
       Source = "source",
       Target = "target",
       Value = "value",
@@ -140,7 +208,7 @@ shinyServer(function(input, output) {
       Group = "group",
       Nodesize = "size",
       opacity = .8,
-      fontSize = 15,
+      fontSize = 25,
       zoom = TRUE
     )
   })

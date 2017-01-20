@@ -41,10 +41,13 @@ def create_hs_ds(tweets):
 
             ts = time.mktime(datetime.datetime.strptime(
                 ts, "%Y-%m-%d %H:%M:%S").timetuple())
+            user = tweet['retweeted_status'][
+                'user'] if 'retweeted_status' in tweet else tweet['user']
 
             tw = {
                 'created_at': ts,
-                'text': hs['text'].encode('utf-8')
+                'text': hs['text'].encode('utf-8'),
+                'screen_name': user['screen_name']
             }
             new.append(tw)
 
@@ -55,19 +58,6 @@ def create_hs_ds(tweets):
 
 def create_nodes_ds(tweets):
     new = {}
-    # usr = {}
-    # for tweet in tweets:
-    #     n = tweet['user']['name']
-    #     if n not in usr:
-    #         usr[n] = [tweet['user']['screen_name']]
-    #     else:
-    #         if tweet['user']['screen_name'] not in usr[n]:
-    #             usr[n].append(tweet['user']['screen_name'])
-
-    # usrc = {k: len(v) for k,v in usr.iteritems()}
-    # for k,v in usrc.iteritems():
-    #     if v > 1:
-    #         print k, v, usr[k]
 
     for tweet in tweets:
         sc = tweet['user']['screen_name']

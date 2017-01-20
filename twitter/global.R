@@ -1,7 +1,7 @@
 library(dplyr)
 
 hs <- "../data/tweets_macbook_sample_hs.txt"
-# hs <- "../data/tweets_macbook_2016-11-03-15-10-46_hs.txt"
+hs <- "../data/tweets_macbook_2016-11-03-15-10-46_hs.txt"
 
 hs <- read.csv(hs)
 # hs <-
@@ -37,7 +37,11 @@ map <-
 map$layerId <- c(1:nrow(map))
 
 keep_sources <-
-  map %>% count(source) %>% arrange(desc(n)) %>% filter(row_number() <= 10) %>% .$source
+  map %>%
+  count(source) %>%
+  arrange(desc(n)) %>%
+  filter(row_number() <= 10) %>%
+  .$source
 
 map <- within(map,
               sourceL <-
@@ -50,6 +54,19 @@ sources <- as.factor(c("All", sl[sl != 'Other'], "Other"))
 # # sources <- "../data/tweets_macbook_2016-11-03-15-10-46_sources.txt"
 # sources <- read.csv(sources)
 # sources <- sources %>% arrange(desc(count))
-# 
+#
 # sourcesV <- sources$count
 # names(sourcesV) <- sources$source
+
+
+nodes <- "../data/tweets_macbook_sample_nodes.txt"
+links <- "../data/tweets_macbook_sample_links.txt"
+
+nodes <- "../data/tweets_macbook_2016-11-03-15-10-46_nodes.txt"
+links <- "../data/tweets_macbook_2016-11-03-15-10-46_links.txt"
+
+links_or <- read.csv(links)
+colnames(links_or) <- c('value', 'source', 'target')
+
+nodes_or <- read.csv(nodes)
+nodes_or$group <- rep(1, nrow(nodes_or))
