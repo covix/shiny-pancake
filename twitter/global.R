@@ -1,7 +1,7 @@
 library(dplyr)
 
 hs <- "../data/tweets_macbook_sample_hs.txt"
-# hs <- "../data/tweets_macbook_2016-11-03-15-10-46_hs.txt"
+hs <- "../data/tweets_macbook_2016-11-03-15-10-46_hs.txt"
 
 hs <- read.csv(hs)
 # hs <-
@@ -23,7 +23,7 @@ hs$text <- tolower(hs$text)
 
 
 map <- "../data/tweets_macbook_sample_map.txt"
-# map <- "../data/tweets_macbook_2016-11-03-15-10-46_map.txt"
+map <- "../data/tweets_macbook_2016-11-03-15-10-46_map.txt"
 map <-
   read.csv(map,
            colClasses = c(
@@ -62,8 +62,8 @@ sources <- as.factor(c("All", sl[sl != 'Other'], "Other"))
 nodes <- "../data/tweets_macbook_sample_nodes.txt"
 links <- "../data/tweets_macbook_sample_links.txt"
 
-# nodes <- "../data/tweets_macbook_2016-11-03-15-10-46_nodes.txt"
-# links <- "../data/tweets_macbook_2016-11-03-15-10-46_links.txt"
+nodes <- "../data/tweets_macbook_2016-11-03-15-10-46_nodes.txt"
+links <- "../data/tweets_macbook_2016-11-03-15-10-46_links.txt"
 
 links_or <- read.csv(links)
 colnames(links_or) <- c('value', 'source', 'target')
