@@ -11,6 +11,7 @@ library(shiny)
 library(leaflet)
 library(shinythemes)
 library(networkD3)
+library(streamgraph)
 # library(shinyCustom)
 # library(visNetwork)
 
